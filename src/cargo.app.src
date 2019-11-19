@@ -1,0 +1,16 @@
+{application, cargo,
+ [{description, "A rebar plugin to build Rust crates."},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib,
+    jsx
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, []},
+  {links, []}
+ ]}.
