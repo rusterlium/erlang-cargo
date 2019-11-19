@@ -30,14 +30,14 @@ metadata(Opts) ->
 
 
 build(Opts) ->
-    cargo_cmd:run(
+    cargo_cmd:run_with_flags(
         Opts,
         ["build", "--message-format=json-diagnostic-short"]
     ).
 
 
 test(Opts) ->
-    cargo_cmd:run(
+    cargo_cmd:run_with_flags(
         Opts,
         ["test", "--message-format=json-diagnostic-short"]
     ).

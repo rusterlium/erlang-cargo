@@ -1,36 +1,46 @@
 -module(cargo_cmd).
 
 -export([
-    run/2
+    run/2,
+    run_with_flags/2
 ]).
+
+
+run_with_flags(Opts, [H|T]) ->
+    Insert0 =
+    case cargo_opts:release(Opts) of
+        true ->
+            ["--release"];
+        _ ->
+            []
+    end,
+
+    Insert1 =
+    case cargo_opts:target(Opts) of
+        undefined ->
+            Insert0;
+        Target ->
+            [io_lib:format("--target=~s", Target) | Insert0]
+    end,
+
+    Cmd1 = [H] ++ Insert1 ++ T,
+
+    run(Opts, Cmd1).
 
 
 run(Opts, Args) ->
     C0 = ["cargo"],
-    C1 = case cargo_opts:toolchain(Opts) of
+    C1 =
+    case cargo_opts:toolchain(Opts) of
         undefined ->
             C0;
         Toolchain ->
-            [io_lib:format("+~s", [Toolchain]) | C0]
-    end,
-
-    C2 = case cargo_opts:release(Opts) of
-        false ->
-            C1;
-        true ->
-            ["--release"|C1]
-    end,
-
-    C3 = case cargo_opts:target(Opts) of
-        undefined ->
-            C2;
-        Target ->
-            [io_lib:format("--target=~s", Target) | C2]
+            C0 ++ [io_lib:format("+~s", [Toolchain])]
     end,
 
     Cmd = lists:flatten(lists:join(
         " ",
-        [binary_to_list(cargo_util:ensure_binary(I)) || I <- lists:reverse(C3) ++ Args]
+        [binary_to_list(cargo_util:ensure_binary(I)) || I <- C1 ++ Args]
     )),
 
     exec(Cmd, cargo_opts:path(Opts)).
