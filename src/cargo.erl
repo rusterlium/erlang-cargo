@@ -14,13 +14,17 @@
 ]).
 
 
+-spec init(file:name_all()) -> cargo_opts:t().
 init(Path) ->
     init(Path, #{}).
 
+
+-spec init(file:name_all(), #{ atom() => _ }) -> cargo_opts:t().
 init(Path, Opts) ->
     cargo_opts:new(Opts#{ path => Path }).
 
 
+-spec metadata(cargo_opts:t()) -> #{ binary() => _ }.
 metadata(Opts) ->
     {ok, [Metadata]} = cargo_cmd:run(
         Opts,
@@ -29,6 +33,7 @@ metadata(Opts) ->
     Metadata.
 
 
+-spec build(cargo_opts:t()) -> #{ binary() => _ }.
 build(Opts) ->
     cargo_cmd:run_with_flags(
         Opts,
@@ -36,6 +41,7 @@ build(Opts) ->
     ).
 
 
+-spec test(cargo_opts:t()) -> #{ binary() => _ }.
 test(Opts) ->
     cargo_cmd:run_with_flags(
         Opts,
@@ -43,6 +49,7 @@ test(Opts) ->
     ).
 
 
+-spec get_package_versions(cargo_opts:t()) -> #{ atom() => _ }.
 get_package_versions(Opts) ->
     #{<<"packages">> := Packages} = metadata(Opts),
     maps:from_list([
@@ -54,6 +61,7 @@ get_package_versions(Opts) ->
     ]).
 
 
+-spec build_and_capture(cargo_opts:t()) -> #{ atom() => _ }.
 build_and_capture(Opts) ->
     Packages = get_package_versions(Opts),
     {ok, Outputs} = build(Opts),
@@ -70,7 +78,8 @@ build_and_capture(Opts) ->
                     Current = maps:get(PackageId, Artifacts),
                     New = Current#{
                         fresh => maps:get(<<"fresh">>, Entry, false),
-                        filenames => maps:get(<<"filenames">>, Entry)
+                        filenames => maps:get(<<"filenames">>, Entry),
+                        kind => maps:get(<<"kind">>, Entry)
                     },
                     Artifacts#{ PackageId => New};
                 _ ->
