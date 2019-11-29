@@ -79,7 +79,7 @@ build_and_capture(Opts) ->
                     New = Current#{
                         fresh => maps:get(<<"fresh">>, Entry, false),
                         filenames => maps:get(<<"filenames">>, Entry),
-                        kind => maps:get(<<"kind">>, Entry)
+                        kind => maps:get(<<"kind">>, maps:get(<<"target">>, Entry))
                     },
                     Artifacts#{ PackageId => New};
                 _ ->
