@@ -66,7 +66,7 @@ build_and_capture(Opts) ->
     Packages = get_package_versions(Opts),
     {ok, Outputs} = build(Opts),
 
-    Artifacts = lists:foldl(
+    Artifacts1 = lists:foldl(
         fun (Entry, Artifacts) ->
             #{
                 <<"reason">> := Reason,
@@ -90,4 +90,4 @@ build_and_capture(Opts) ->
         Outputs
     ),
 
-    Artifacts.
+    Artifacts1.
