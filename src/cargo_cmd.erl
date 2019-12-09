@@ -49,7 +49,7 @@ run(Opts, Args) ->
 % Code derived from rebar3
 exec(Command, Path) ->
     OutputHandler =
-    fun (Line, Acc) when Line =/= "" ->
+    fun (<<"{", _/binary>> = Line, Acc) ->
             [jsx:decode(Line, [return_maps]) | Acc];
         (_, Acc) ->
             Acc
