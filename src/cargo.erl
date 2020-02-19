@@ -52,7 +52,8 @@ test(Opts) ->
     cargo_cmd:run_with_flags(
         Opts,
         "test",
-        ["--message-format=json-diagnostic-short"]
+        ["--message-format=json-diagnostic-short",
+         "--", "-Z", "unstable-options", "--format=json"]
     ).
 
 
