@@ -1,6 +1,7 @@
 -module(cargo_opts).
 
 -export_type([
+    params/0,
     t/0
 ]).
 
@@ -19,10 +20,16 @@
     target :: binary() | undefined
 }).
 
+-type params() :: #{
+    path := file:filename_all(),
+    release := boolean(),
+    toolchain := binary(),
+    target := binary()
+}.
 
 -opaque t() :: #opts{}.
 
-
+-spec new(params()) -> t().
 new(Opts) ->
     Path = maps:get(path, Opts),
     Release = maps:get(release, Opts, false),
@@ -36,15 +43,18 @@ new(Opts) ->
         target=Target
     }.
 
-
+-spec toolchain(t()) -> binary() | undefined.
 toolchain(#opts{toolchain=Toolchain}) ->
     Toolchain.
 
+-spec release(t()) -> boolean().
 release(#opts{release=Release}) ->
     Release.
 
+-spec path(t()) -> file:filename_all().
 path(#opts{path=Path}) ->
     Path.
 
+-spec target(t()) -> binary() | undefined.
 target(#opts{target=Target}) ->
     Target.

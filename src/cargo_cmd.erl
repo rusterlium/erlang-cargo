@@ -2,11 +2,20 @@
 
 -export([
     run/2,
-    run_with_flags/2
+    run_with_flags/3
 ]).
 
+-export_type([
+    output/0
+]).
 
-run_with_flags(Opts, [H|T]) ->
+-type output() :: list(#{
+    binary() => jsx:json_term()
+}).
+
+
+-spec run_with_flags(cargo_opts:t(), iolist(), [iolist()]) -> output().
+run_with_flags(Opts, Cmd, Flags) ->
     Insert0 =
     case cargo_opts:release(Opts) of
         true ->
@@ -20,14 +29,15 @@ run_with_flags(Opts, [H|T]) ->
         undefined ->
             Insert0;
         Target ->
-            [io_lib:format("--target=~s", Target) | Insert0]
+            [io_lib:format("--target=~s", [Target]) | Insert0]
     end,
 
-    Cmd1 = [H] ++ Insert1 ++ T,
+    Cmd1 = [Cmd] ++ Insert1 ++ Flags,
 
     run(Opts, Cmd1).
 
 
+-spec run(cargo_opts:t(), [iolist()]) -> output().
 run(Opts, Args) ->
     C0 = ["cargo"],
     C1 =
@@ -47,6 +57,7 @@ run(Opts, Args) ->
 
 
 % Code derived from rebar3
+-spec exec(string(), file:filename_all()) -> output().
 exec(Command, Path) ->
     OutputHandler =
     fun (Line, Acc) when Line =/= "" ->
@@ -72,8 +83,8 @@ exec(Command, Path) ->
 
     try
         case loop(Port, OutputHandler, []) of
-            {ok, _Output} = Ok ->
-                Ok;
+            {ok, Output} ->
+                Output;
             {error, {_Rc, _Output}=Err} ->
                 error({cargo_error, Err})
         end
@@ -82,6 +93,7 @@ exec(Command, Path) ->
     end.
 
 
+-spec loop(port(), fun((ok, [T]) -> T), [T]) -> {ok, [T]} | {error, _}.
 loop(Port, Fun, Acc) ->
     receive
         {Port, {data, {_, Line}}} ->
@@ -97,6 +109,7 @@ loop(Port, Fun, Acc) ->
     end.
 
 
+-spec patch_on_windows(string()) -> string().
 patch_on_windows(Cmd) ->
     case os:type() of
         {win32, nt} ->
@@ -106,6 +119,7 @@ patch_on_windows(Cmd) ->
     end.
 
 
+-spec env() -> [{string(), string()}].
 env() ->
     case os:type() of
         {unix, darwin} ->

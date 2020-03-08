@@ -13,6 +13,8 @@
     get_package_versions/1
 ]).
 
+-type result() :: cargo_cmd:output().
+
 
 -spec init(file:name_all()) -> cargo_opts:t().
 init(Path) ->
@@ -26,26 +28,29 @@ init(Path, Opts) ->
 
 -spec metadata(cargo_opts:t()) -> #{ binary() => _ }.
 metadata(Opts) ->
-    {ok, [Metadata]} = cargo_cmd:run(
+    [Metadata] = cargo_cmd:run_with_flags(
         Opts,
-        ["metadata", "--format-version=1", "--no-deps"]
+        "metadata",
+        ["--format-version=1", "--no-deps"]
     ),
     Metadata.
 
 
--spec build(cargo_opts:t()) -> #{ binary() => _ }.
+-spec build(cargo_opts:t()) -> result().
 build(Opts) ->
     cargo_cmd:run_with_flags(
         Opts,
-        ["build", "--message-format=json-diagnostic-short"]
+        "build",
+        ["--message-format=json-diagnostic-short"]
     ).
 
 
--spec test(cargo_opts:t()) -> #{ binary() => _ }.
+-spec test(cargo_opts:t()) -> result().
 test(Opts) ->
     cargo_cmd:run_with_flags(
         Opts,
-        ["test", "--message-format=json-diagnostic-short"]
+        "test",
+        ["--message-format=json-diagnostic-short"]
     ).
 
 
@@ -64,7 +69,7 @@ get_package_versions(Opts) ->
 -spec build_and_capture(cargo_opts:t()) -> #{ atom() => _ }.
 build_and_capture(Opts) ->
     Packages = get_package_versions(Opts),
-    {ok, Outputs} = build(Opts),
+    Outputs = build(Opts),
 
     Artifacts1 = lists:foldl(
         fun (Entry, Artifacts) ->
