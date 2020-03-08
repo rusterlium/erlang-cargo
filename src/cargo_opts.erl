@@ -10,7 +10,8 @@
     toolchain/1,
     path/1,
     target/1,
-    release/1
+    release/1,
+    release/2
 ]).
 
 -record(opts, {
@@ -50,6 +51,10 @@ toolchain(#opts{toolchain=Toolchain}) ->
 -spec release(t()) -> boolean().
 release(#opts{release=Release}) ->
     Release.
+
+-spec release(t(), boolean()) -> t().
+release(O, Release) ->
+    O#opts{release=Release}.
 
 -spec path(t()) -> file:filename_all().
 path(#opts{path=Path}) ->

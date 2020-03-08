@@ -28,8 +28,10 @@ init(Path, Opts) ->
 
 -spec metadata(cargo_opts:t()) -> #{ binary() => _ }.
 metadata(Opts) ->
+    % --release is invalid for metadata, skip
+    Opts1 = cargo_opts:release(Opts, false),
     [Metadata] = cargo_cmd:run_with_flags(
-        Opts,
+        Opts1,
         "metadata",
         ["--format-version=1", "--no-deps"]
     ),
