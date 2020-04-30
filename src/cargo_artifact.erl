@@ -30,16 +30,14 @@
 
 -spec from_json(jsx:term()) -> {ok, t()} | error.
 from_json(Entry) ->
-    #{
-        <<"reason">> := Reason,
-        <<"package_id">> := PackageId
-    } = Entry,
-
-    case Reason of
+    case maps:get(<<"reason">>, Entry, undefined) of
         <<"compiler-artifact">> ->
-            Target = maps:get(<<"target">>, Entry),
+            #{
+                <<"package_id">> := PackageId,
+                <<"target">> := Target
+             } = Entry,
             Kind = kind_to_atom(maps:get(<<"kind">>, Target)),
-            Executable = case maps:get(<<"executable">>, Entry) of
+            Executable = case maps:get(<<"executable">>, Entry, undefined) of
                 null -> undefined;
                 V -> V
             end,
