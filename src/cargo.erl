@@ -69,33 +69,25 @@ get_package_versions(Opts) ->
     ]).
 
 
--spec build_and_capture(cargo_opts:t()) -> #{ atom() => _ }.
+-spec build_and_capture(cargo_opts:t()) -> [cargo_artifact:t()].
 build_and_capture(Opts) ->
     Packages = get_package_versions(Opts),
     Outputs = build(Opts),
 
-    Artifacts1 = lists:foldl(
-        fun (Entry, Artifacts) ->
-            #{
-                <<"reason">> := Reason,
-                <<"package_id">> := PackageId
-            } = Entry,
-
-            case Reason of
-                <<"compiler-artifact">> when is_map_key(PackageId, Artifacts) ->
-                    Current = maps:get(PackageId, Artifacts),
-                    New = Current#{
-                        fresh => maps:get(<<"fresh">>, Entry, false),
-                        filenames => maps:get(<<"filenames">>, Entry),
-                        kind => maps:get(<<"kind">>, maps:get(<<"target">>, Entry))
-                    },
-                    Artifacts#{ PackageId => New};
-                _ ->
-                    Artifacts
+    lists:filtermap(
+        fun (Entry) ->
+            case cargo_artifact:from_json(Entry) of
+                {ok, Artifact} ->
+                    PackageId = cargo_artifact:package_id(Artifact),
+                    case maps:find(PackageId, Packages) of
+                        {ok, Version} ->
+                            {true, cargo_artifact:version(Artifact, Version)};
+                        error ->
+                            false
+                    end;
+                error ->
+                    false
             end
         end,
-        Packages,
         Outputs
-    ),
-
-    Artifacts1.
+    ).
