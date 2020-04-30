@@ -80,7 +80,7 @@ build_and_capture(Opts) ->
                 {ok, Artifact} ->
                     PackageId = cargo_artifact:package_id(Artifact),
                     case maps:find(PackageId, Packages) of
-                        {ok, Version} ->
+                        {ok, #{version := Version}} ->
                             {true, cargo_artifact:version(Artifact, Version)};
                         error ->
                             false
