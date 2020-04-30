@@ -7,7 +7,8 @@
 -export([
     get_crate_dirs/1,
     get_priv_dir/1,
-    is_dylib/1
+    is_dylib/1,
+    is_executable/2
 ]).
 
 -define(SOURCE_DIR, "rust_src").
@@ -48,3 +49,15 @@ is_dylib(Path) ->
         _ ->
             false
     end.
+
+
+-spec is_executable(Crate :: binary(), file:filename_all()) -> boolean().
+is_executable(Crate, Filename) ->
+    Basename = ensure_binary(filename:basename(Filename)),
+    Expected = case os:type() of
+        {win32, _} ->
+            ensure_binary([Crate, ".exe"]);
+        _ ->
+            ensure_binary(Crate)
+    end,
+    Basename == Expected.
