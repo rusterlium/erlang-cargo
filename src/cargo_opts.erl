@@ -22,7 +22,7 @@
 }).
 
 -type params() :: #{
-    path := file:filename_all(),
+    path := file:name_all(),
     release := boolean(),
     toolchain := binary(),
     target := binary()
@@ -30,6 +30,7 @@
 
 -opaque t() :: #opts{}.
 
+%% @private
 -spec new(params()) -> t().
 new(Opts) ->
     Path = maps:get(path, Opts),

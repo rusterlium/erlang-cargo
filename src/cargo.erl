@@ -23,7 +23,13 @@ init(Path) ->
 
 -spec init(file:name_all(), #{ atom() => _ }) -> cargo_opts:t().
 init(Path, Opts) ->
-    cargo_opts:new(Opts#{ path => Path }).
+    CargoTomlPath = filename:join([Path, "Cargo.toml"]),
+    case filelib:is_dir(Path) andalso filelib:is_file(CargoTomlPath) of
+        true ->
+            cargo_opts:new(Opts#{ path => Path });
+        false ->
+            error(cargo_toml_not_found)
+    end.
 
 
 -spec metadata(cargo_opts:t()) -> #{ binary() => _ }.

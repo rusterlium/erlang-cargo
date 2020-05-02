@@ -3,9 +3,9 @@
 -export([
     from_json/1,
 
+    name/1,
     version/1,
     version/2,
-    crate/1,
     package_id/1,
     fresh/1,
     kind/1,
@@ -15,7 +15,8 @@
 
 
 -record(artifact, {
-    crate :: binary(),
+    name :: binary(),
+    % crate :: binary(), from package_id?
     version :: binary() | undefined,
     package_id :: binary(),
     fresh :: boolean(),
@@ -42,7 +43,7 @@ from_json(Entry) ->
                 V -> V
             end,
             {ok, #artifact{
-                crate = maps:get(<<"name">>, Target),
+                name = maps:get(<<"name">>, Target),
                 filenames = maps:get(<<"filenames">>, Entry),
                 kind = Kind,
                 package_id = PackageId,
@@ -54,8 +55,8 @@ from_json(Entry) ->
     end.
 
 
--spec crate(t()) -> binary().
-crate(#artifact{crate=C}) -> C.
+-spec name(t()) -> binary().
+name(#artifact{name=C}) -> C.
 
 -spec version(t()) -> binary() | undefined.
 version(#artifact{version=V}) -> V.

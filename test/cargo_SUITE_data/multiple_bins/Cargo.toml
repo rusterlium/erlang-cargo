@@ -1,0 +1,18 @@
+[package]
+name = "multiple_bins"
+version = "0.1.0"
+authors = ["Benedikt Reinartz <filmor@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[[bin]]
+name = "main2"
+path = "src/main2.rs"
