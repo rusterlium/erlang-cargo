@@ -4,24 +4,25 @@
     init/1,
     init/2,
     metadata/1,
+    build_raw/1,
     build/1,
-    test/1
+    test/1,
+    clean/1
 ]).
 
 -export([
-    build_and_capture/1,
     get_package_versions/1
 ]).
 
 -type result() :: cargo_cmd:output().
 
 
--spec init(file:name_all()) -> cargo_opts:t().
+-spec init(file:name_all()) -> cargo_opts:t() | no_return().
 init(Path) ->
     init(Path, #{}).
 
 
--spec init(file:name_all(), #{ atom() => _ }) -> cargo_opts:t().
+-spec init(file:name_all(), #{ atom() => _ }) -> cargo_opts:t() | no_return().
 init(Path, Opts) ->
     CargoTomlPath = filename:join([Path, "Cargo.toml"]),
     case filelib:is_dir(Path) andalso filelib:is_file(CargoTomlPath) of
@@ -32,7 +33,7 @@ init(Path, Opts) ->
     end.
 
 
--spec metadata(cargo_opts:t()) -> #{ binary() => _ }.
+-spec metadata(cargo_opts:t()) -> #{ binary() => _ } | no_return().
 metadata(Opts) ->
     % --release is invalid for metadata, skip
     Opts1 = cargo_opts:release(Opts, false),
@@ -44,8 +45,8 @@ metadata(Opts) ->
     Metadata.
 
 
--spec build(cargo_opts:t()) -> result().
-build(Opts) ->
+-spec build_raw(cargo_opts:t()) -> result() | no_return().
+build_raw(Opts) ->
     cargo_cmd:run_with_flags(
         Opts,
         "build",
@@ -53,7 +54,7 @@ build(Opts) ->
     ).
 
 
--spec test(cargo_opts:t()) -> result().
+-spec test(cargo_opts:t()) -> result() | no_return().
 test(Opts) ->
     cargo_cmd:run_with_flags(
         Opts,
@@ -63,22 +64,35 @@ test(Opts) ->
     ).
 
 
+-spec clean(cargo_opts:t()) -> ok | no_return().
+clean(Opts) ->
+    cargo_cmd:run_with_flags(
+        Opts,
+        "clean",
+        ["-q"]
+    ),
+    ok.
+
+
 -spec get_package_versions(cargo_opts:t()) -> #{ atom() => _ }.
 get_package_versions(Opts) ->
     #{<<"packages">> := Packages} = metadata(Opts),
     maps:from_list([
         {
             maps:get(<<"id">>, M),
-            #{name => maps:get(<<"name">>, M), version => maps:get(<<"version">>, M)}
+            #{
+                name => maps:get(<<"name">>, M),
+                version => maps:get(<<"version">>, M)
+            }
         }
         || M <- Packages
     ]).
 
 
--spec build_and_capture(cargo_opts:t()) -> [cargo_artifact:t()].
-build_and_capture(Opts) ->
+-spec build(cargo_opts:t()) -> [cargo_artifact:t()].
+build(Opts) ->
     Packages = get_package_versions(Opts),
-    Outputs = build(Opts),
+    Outputs = build_raw(Opts),
 
     lists:filtermap(
         fun (Entry) ->

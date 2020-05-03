@@ -15,29 +15,31 @@ all() ->
 
 simple_bin(Config) ->
     C = cargo:init(?config(crate_path, Config)),
-    [Artifact] = cargo:build_and_capture(C),
+    [Artifact] = cargo:build(C),
     basic_tests(<<"simple_bin">>, <<"0.1.0">>, Artifact),
     basic_tests_bin(<<"simple_bin">>, Artifact),
     cargo:test(C),
 
-    % ok = cargo:clean(C)
+    clean(C, [Artifact]),
     ok.
 
 
 simple_lib(Config) ->
     C = cargo:init(?config(crate_path, Config)),
-    [Artifact] = cargo:build_and_capture(C),
+    [Artifact] = cargo:build(C),
     basic_tests(<<"simple_lib">>, <<"0.1.0">>, Artifact),
     basic_tests_lib(<<"simple_lib">>, Artifact),
+
     cargo:test(C),
 
-    % ok = cargo:clean(C)
+    clean(C, [Artifact]),
+    
     ok.
 
 
 multiple_bins(Config) ->
     C = cargo:init(?config(crate_path, Config)),
-    Artifacts = cargo:build_and_capture(C),
+    Artifacts = cargo:build(C),
     ?assertMatch(2, length(Artifacts)),
     [Main] = [A || A <- Artifacts, cargo_artifact:name(A) =:= <<"main">>],
     [Main2] = [A || A <- Artifacts, cargo_artifact:name(A) =:= <<"main2">>],
@@ -47,12 +49,16 @@ multiple_bins(Config) ->
     basic_tests(<<"main2">>, <<"0.1.0">>, Main2),
     basic_tests_bin(<<"main2">>, Main2),
 
+    cargo:test(C),
+    
+    clean(C, Artifacts),
+
     ok.
 
 
 package(Config) ->
     C = cargo:init(?config(crate_path, Config)),
-    Artifacts = cargo:build_and_capture(C),
+    Artifacts = cargo:build(C),
     ?assertMatch([_,_,_], (Artifacts)),
     ct:pal("~p", [Artifacts]),
     [Lib] = [A || A <- Artifacts, cargo_artifact:kind(A) =:= cdylib],
@@ -63,6 +69,10 @@ package(Config) ->
     basic_tests(<<"bin">>, <<"0.1.0">>, Bin),
     basic_tests_bin(<<"bin">>, Bin),
     basic_tests(<<"other_lib">>, <<"0.1.0">>, Other),
+
+    cargo:test(C),
+
+    clean(C, Artifacts),
 
     ok.
 
@@ -103,3 +113,13 @@ basic_tests_lib(Name, Artifact) ->
     [Lib] = [L || L <- cargo_artifact:filenames(Artifact), cargo_util:is_dylib(L)],
     ?assertNotMatch(nomatch, string:find(Lib, Name)),
     ?assertMatch(cdylib, cargo_artifact:kind(Artifact)).
+
+
+clean(Cargo, Artifacts) ->
+    ct:pal("Cleaning ~p artifacts", [length(Artifacts)]),
+    cargo:clean(Cargo),
+    [
+        ?assertMatch(false, filelib:is_file(File)) ||
+        Artifact <- Artifacts,
+        File <- cargo_artifact:filenames(Artifact)
+    ].

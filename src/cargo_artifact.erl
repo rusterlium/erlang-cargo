@@ -29,7 +29,7 @@
 -opaque t() :: #artifact{}.
 -export_type([t/0]).
 
--spec from_json(jsx:term()) -> {ok, t()} | error.
+-spec from_json(jsx:json_term()) -> {ok, t()} | error.
 from_json(Entry) ->
     case maps:get(<<"reason">>, Entry, undefined) of
         <<"compiler-artifact">> ->
