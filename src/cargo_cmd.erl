@@ -92,7 +92,7 @@ exec(Command, Path) ->
     end.
 
 
--spec loop(port(), [T]) -> {ok, [T]} | {error, _}.
+-spec loop(port(), [T | {incomplete, _}]) -> {ok, [T]} | {error, _}.
 loop(Port, Acc) ->
     receive
         {Port, {data, {_, Line}}} ->
@@ -128,12 +128,18 @@ env() ->
     end.
 
 
+% Ignore dialyzer warnings for finalize and handle_output as the spec
+% for jsx:decode/2 is broken (does not include incomplete and with_tail)
+-dialyzer([
+    {nowarn_function, finalize/1},
+    {nowarn_function, handle_output/2}
+]).
+
 finalize([{incomplete, _Decode} | _Acc]) ->
     error(incomplete_json);
 
 finalize(Acc) ->
     lists:reverse(Acc).
-
 
 handle_output("", Acc) ->
     Acc;
