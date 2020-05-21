@@ -13,6 +13,11 @@
     binary() => jsx:json_term()
 }).
 
+-ifdef(TEST).
+-define(MAX_LINE_LENGTH, 32).
+-else.
+-define(MAX_LINE_LENGTH, 16384).
+-endif.
 
 -spec run_with_flags(cargo_opts:t(), iolist(), [iolist()]) -> output().
 run_with_flags(Opts, Cmd, Flags) ->
@@ -59,19 +64,13 @@ run(Opts, Args) ->
 % Code derived from rebar3
 -spec exec(string(), file:filename_all()) -> output().
 exec(Command, Path) ->
-    OutputHandler =
-    fun (Line, Acc) when Line =/= "" ->
-            [jsx:decode(Line, [return_maps]) | Acc];
-        (_, Acc) ->
-            Acc
-    end,
 
     Options1 = [
         in,
         binary,
         {cd, Path},
         exit_status,
-        {line, 16384},
+        {line, ?MAX_LINE_LENGTH},
         use_stdio,
         hide,
         eof,
@@ -82,7 +81,7 @@ exec(Command, Path) ->
     Port = open_port({spawn, Command1}, Options1),
 
     try
-        case loop(Port, OutputHandler, []) of
+        case loop(Port, []) of
             {ok, Output} ->
                 Output;
             {error, {_Rc, _Output}=Err} ->
@@ -93,13 +92,13 @@ exec(Command, Path) ->
     end.
 
 
--spec loop(port(), fun((ok, [T]) -> T), [T]) -> {ok, [T]} | {error, _}.
-loop(Port, Fun, Acc) ->
+-spec loop(port(), [T]) -> {ok, [T]} | {error, _}.
+loop(Port, Acc) ->
     receive
         {Port, {data, {_, Line}}} ->
-            loop(Port, Fun, Fun(Line, Acc));
+            loop(Port, handle_output(Line, Acc));
         {Port, eof} ->
-            Data = lists:reverse(Acc),
+            Data = finalize(Acc),
             receive
                 {Port, {exit_status, 0}} ->
                     {ok, Data};
@@ -126,4 +125,34 @@ env() ->
             [{"RUSTFLAGS", "--codegen 'link-args=-flat_namespace -undefined suppress'"}];
         _ ->
             []
+    end.
+
+
+finalize([{incomplete, _Decode} | _Acc]) ->
+    error(incomplete_json);
+
+finalize(Acc) ->
+    lists:reverse(Acc).
+
+
+handle_output("", Acc) ->
+    Acc;
+
+handle_output(<<"">>, Acc) ->
+    Acc;
+
+handle_output(Line, Acc0) ->
+    {DecodeRes, Acc} =
+    case Acc0 of
+        [{incomplete, Decode} | Acc1] ->
+            {Decode(Line), Acc1};
+        Acc2 ->
+            {jsx:decode(Line, [return_maps, stream, return_tail]), Acc2}
+    end,
+
+    case DecodeRes of
+        {with_tail, Res, Tail} ->
+            handle_output(Tail, [Res | Acc]);
+        Else ->
+            [Else | Acc]
     end.
