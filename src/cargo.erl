@@ -4,9 +4,15 @@
     init/1,
     init/2,
     metadata/1,
-    build_raw/1,
-    build/1,
-    test/1,
+
+    build_raw/2,
+
+    build/2,
+    build_all/1,
+
+    test/2,
+    test_all/1,
+
     clean/1
 ]).
 
@@ -39,22 +45,31 @@ metadata(Opts) ->
     Metadata.
 
 
--spec build_raw(cargo_opts:t()) -> result() | no_return().
-build_raw(Opts) ->
+-spec build_raw(cargo_opts:t(), cargo_util:maybe_package()) -> result() | no_return().
+build_raw(Opts, MaybePackage) ->
     cargo_cmd:run_with_flags(
         Opts,
         "build",
-        ["--message-format=json-diagnostic-short"]
+        ["--message-format=json-diagnostic-short"] ++
+        cargo_util:package_flag(MaybePackage)
     ).
 
 
--spec test(cargo_opts:t()) -> result() | no_return().
-test(Opts) ->
+-spec test_all(cargo_opts:t()) -> result() | no_return().
+test_all(Opts) ->
+    do_test(Opts, false).
+
+-spec test(cargo_opts:t(), cargo_util:to_binary()) -> result() | no_return().
+test(Opts, Package) ->
+    do_test(Opts, {true, Package}).
+
+do_test(Opts, MaybePackage) ->
     cargo_cmd:run_with_flags(
         Opts,
         "test",
-        ["--message-format=json-diagnostic-short",
-         "--", "-Z", "unstable-options", "--format=json"]
+        ["--message-format=json-diagnostic-short"] ++
+        cargo_util:package_flag(MaybePackage) ++
+        ["--", "-Z", "unstable-options", "--format=json"]
     ).
 
 
@@ -83,10 +98,19 @@ get_package_versions(Opts) ->
     ]).
 
 
--spec build(cargo_opts:t()) -> [cargo_artifact:t()].
-build(Opts) ->
+-spec build_all(cargo_opts:t()) -> [cargo_artifact:t()].
+build_all(Opts) ->
+    do_build(Opts, false).
+
+
+-spec build(cargo_opts:t(), cargo_util:to_binary()) -> [cargo_artifact:t()].
+build(Opts, Package) ->
+    do_build(Opts, {true, Package}).
+
+
+do_build(Opts, MaybePackage) ->
     Packages = get_package_versions(Opts),
-    Outputs = build_raw(Opts),
+    Outputs = build_raw(Opts, MaybePackage),
 
     lists:filtermap(
         fun (Entry) ->

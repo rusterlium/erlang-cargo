@@ -1,6 +1,7 @@
 -module(cargo_util).
 
 -export([
+    package_flag/1,
     ensure_binary/1
 ]).
 
@@ -9,11 +10,29 @@
     is_executable/1
 ]).
 
+-export_type([
+    to_binary/0,
+    maybe_package/0
+]).
+
+-type to_binary() :: atom() | string() | iolist() | binary().
+-type maybe_package() :: {true, to_binary()} | false.
+
 -define(SOURCE_DIR, "rust_src").
 -define(OUTPUT_DIR, "crates").
 
 
--spec ensure_binary(string() | iolist() | binary()) -> binary().
+-spec package_flag(maybe_package()) -> [binary()].
+package_flag({true, Package}) ->
+    [<<"-p">>, ensure_binary(Package)];
+package_flag(false) ->
+    [].
+
+
+-spec ensure_binary(to_binary()) -> binary().
+ensure_binary(Atom) when is_atom(Atom) ->
+    atom_to_binary(Atom);
+
 ensure_binary(List) when is_list(List) ->
     list_to_binary(List);
 

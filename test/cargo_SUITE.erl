@@ -15,10 +15,10 @@ all() ->
 
 simple_bin(Config) ->
     C = cargo:init(?config(crate_path, Config)),
-    [Artifact] = cargo:build(C),
+    [Artifact] = cargo:build_all(C),
     basic_tests(<<"simple_bin">>, <<"0.1.0">>, Artifact),
     basic_tests_bin(<<"simple_bin">>, Artifact),
-    cargo:test(C),
+    cargo:test_all(C),
 
     clean(C, [Artifact]),
     ok.
@@ -26,11 +26,12 @@ simple_bin(Config) ->
 
 simple_lib(Config) ->
     C = cargo:init(?config(crate_path, Config)),
-    [Artifact] = cargo:build(C),
+    [Artifact] = cargo:build(C, "simple_lib"),
+
     basic_tests(<<"simple_lib">>, <<"0.1.0">>, Artifact),
     basic_tests_lib(<<"simple_lib">>, Artifact),
 
-    cargo:test(C),
+    cargo:test(C, "simple_lib"),
 
     clean(C, [Artifact]),
     
@@ -39,7 +40,7 @@ simple_lib(Config) ->
 
 multiple_bins(Config) ->
     C = cargo:init(?config(crate_path, Config)),
-    Artifacts = cargo:build(C),
+    Artifacts = cargo:build_all(C),
     ?assertMatch(2, length(Artifacts)),
     [Main] = [A || A <- Artifacts, cargo_artifact:name(A) =:= <<"main">>],
     [Main2] = [A || A <- Artifacts, cargo_artifact:name(A) =:= <<"main2">>],
@@ -49,7 +50,7 @@ multiple_bins(Config) ->
     basic_tests(<<"main2">>, <<"0.1.0">>, Main2),
     basic_tests_bin(<<"main2">>, Main2),
 
-    cargo:test(C),
+    cargo:test_all(C),
     
     clean(C, Artifacts),
 
@@ -58,7 +59,7 @@ multiple_bins(Config) ->
 
 package(Config) ->
     C = cargo:init(?config(crate_path, Config)),
-    Artifacts = cargo:build(C),
+    Artifacts = cargo:build_all(C),
     ?assertMatch([_,_,_], (Artifacts)),
     ct:pal("~p", [Artifacts]),
     [Lib] = [A || A <- Artifacts, cargo_artifact:kind(A) =:= cdylib],
@@ -70,7 +71,7 @@ package(Config) ->
     basic_tests_bin(<<"bin">>, Bin),
     basic_tests(<<"other_lib">>, <<"0.1.0">>, Other),
 
-    cargo:test(C),
+    cargo:test_all(C),
 
     clean(C, Artifacts),
 
