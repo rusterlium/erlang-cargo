@@ -31,7 +31,7 @@ package_flag(false) ->
 
 -spec ensure_binary(to_binary()) -> binary().
 ensure_binary(Atom) when is_atom(Atom) ->
-    atom_to_binary(Atom);
+    atom_to_binary(Atom, utf8);
 
 ensure_binary(List) when is_list(List) ->
     list_to_binary(List);
