@@ -96,10 +96,8 @@ basic_tests_bin(ExeName, Artifact) ->
             filename:basename(cargo_artifact:executable(Artifact))
         )
     ),
-    ?assertEqual(
-        [cargo_artifact:executable(Artifact)],
-        cargo_artifact:filenames(Artifact)
-    ).
+    ?assert(lists:member(cargo_artifact:executable(Artifact),
+                         cargo_artifact:filenames(Artifact))).
 
 
 basic_tests(Name, Version, Artifact) ->
