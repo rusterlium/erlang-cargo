@@ -11,21 +11,25 @@
     path/1,
     target/1,
     release/1,
-    release/2
+    release/2,
+    target_dir/1,
+    target_dir/2
 ]).
 
 -record(opts, {
     path :: file:name_all(),
     release :: boolean(),
     toolchain :: binary() | undefined,
-    target :: binary() | undefined
+    target :: binary() | undefined,
+    target_dir :: binary() | undefined
 }).
 
 -type params() :: #{
     path := file:name_all(),
     release := boolean(),
     toolchain := binary(),
-    target := binary()
+    target := binary(),
+    target_dir := binary()
 }.
 
 -opaque t() :: #opts{}.
@@ -37,12 +41,14 @@ new(Opts) ->
     Release = maps:get(release, Opts, false),
     Toolchain = maps:get(toolchain, Opts, undefined),
     Target = maps:get(target, Opts, undefined),
+    TargetDir = maps:get(target_dir, Opts, undefined),
 
     #opts{
         path=Path,
         release=Release,
         toolchain=Toolchain,
-        target=Target
+        target=Target,
+        target_dir=TargetDir
     }.
 
 -spec toolchain(t()) -> binary() | undefined.
@@ -64,3 +70,12 @@ path(#opts{path=Path}) ->
 -spec target(t()) -> binary() | undefined.
 target(#opts{target=Target}) ->
     Target.
+
+-spec target_dir(t()) -> binary() | undefined.
+target_dir(#opts{target_dir=TargetDir}) ->
+    TargetDir.
+
+-spec target_dir(t(), binary()) -> t().
+target_dir(O, TargetDir) ->
+    O#opts{target_dir=TargetDir}.
+

@@ -9,7 +9,8 @@ all() ->
         simple_bin,
         simple_lib,
         multiple_bins,
-        package
+        package,
+        custom_target_bin
     ].
 
 
@@ -75,6 +76,19 @@ package(Config) ->
 
     clean(C, Artifacts),
 
+    ok.
+
+custom_target_bin(Config) ->
+    TargetDir = filename:join([?config(priv_dir, Config), "custom_target"]),
+    ok = filelib:ensure_dir(filename:join([TargetDir, "dummy"])),
+    C = cargo:init(?config(crate_path, Config),
+                   #{target_dir => TargetDir}),
+    [Artifact] = cargo:build_all(C),
+    basic_tests(<<"custom_target_bin">>, <<"0.1.0">>, Artifact),
+    basic_tests_bin(<<"custom_target_bin">>, Artifact),
+    cargo:test_all(C),
+
+    clean(C, [Artifact]),
     ok.
 
 

@@ -21,23 +21,23 @@
 
 -spec run_with_flags(cargo_opts:t(), iolist(), [iolist()]) -> output().
 run_with_flags(Opts, Cmd, Flags) ->
-    Insert0 =
-    case cargo_opts:release(Opts) of
-        true ->
-            ["--release"];
-        _ ->
-            []
-    end,
 
-    Insert1 =
-    case cargo_opts:target(Opts) of
-        undefined ->
-            Insert0;
-        Target ->
-            [io_lib:format("--target=~s", [Target]) | Insert0]
-    end,
+    Inserts =
+        lists:foldl(fun({release, true}, Acc) ->
+                           ["--release" | Acc];
+                       ({target, Target}, Acc) when is_binary(Target) ->
+                           [io_lib:format("--target=~s", [Target]) | Acc];
+                       ({target_dir, TargetDir}, Acc) when is_binary(TargetDir) ->
+                           [io_lib:format("--target-dir=~s", [TargetDir]) | Acc];
+                       (_, Acc) ->
+                            Acc
+                    end,
+                    [],
+                    [{release, cargo_opts:release(Opts)},
+                     {target, cargo_opts:target(Opts)},
+                     {target_dir, cargo_opts:target_dir(Opts)}]),
 
-    Cmd1 = [Cmd] ++ Insert1 ++ Flags,
+    Cmd1 = [Cmd] ++ Inserts ++ Flags,
 
     run(Opts, Cmd1).
 
