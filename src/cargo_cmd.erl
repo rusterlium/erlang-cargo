@@ -122,7 +122,9 @@ patch_on_windows(Cmd) ->
 env() ->
     case os:type() of
         {unix, darwin} ->
-            [{"RUSTFLAGS", "--codegen 'link-args=-flat_namespace -undefined suppress'"}];
+            % https://github.com/rust-lang/cargo/issues/3287
+            % https://github.com/rust-lang/rust/pull/36574
+            [{"RUSTFLAGS", "--codegen link-arg=-flat_namespace --codegen link-arg=-undefined --codegen link-arg=suppress"}];
         _ ->
             []
     end.
