@@ -32,13 +32,14 @@ init(Path) ->
 init(Path, Opts) ->
     cargo_opts:new(Opts#{ path => Path }).
 
-
 -spec metadata(cargo_opts:t()) -> #{ binary() => _ } | no_return().
-metadata(Opts) ->
+metadata(Opts0) ->
     % --release is invalid for metadata, skip
-    Opts1 = cargo_opts:release(Opts, false),
+    Opts1 = cargo_opts:release(Opts0, false),
+    % ditto for --target-dir
+    Opts = cargo_opts:target_dir(Opts1, undefined),
     [Metadata] = cargo_cmd:run_with_flags(
-        Opts1,
+        Opts,
         "metadata",
         ["--format-version=1", "--no-deps"]
     ),
