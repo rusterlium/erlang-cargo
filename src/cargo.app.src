@@ -1,19 +1,12 @@
-{application, cargo,
- [{description, "Erlang wrapper for Rust's cargo build tool"},
-  {vsn, "0.1.1"},
-  {registered, []},
-  {applications,
-   [kernel,
-    stdlib,
-    jsx
-   ]},
-  {env,[]},
-  {modules, []},
-
-  {build_tools, ["rebar3", "mix"]},
-  {include_files, ["mix.exs"]},
-  {licenses, ["Apache-2.0", "MIT"]},
-  {links, [
-      {"Github", "https://github.com/rusterlium/erlang-cargo"}
-  ]}
- ]}.
+{application,cargo,
+             [{description,"Erlang wrapper for Rust's cargo build tool"},
+              {vsn,"0.1.2"},
+              {registered,[]},
+              {applications,[kernel,stdlib,jsx]},
+              {env,[]},
+              {modules,[]},
+              {build_tools,["rebar3","mix"]},
+              {include_files,["mix.exs"]},
+              {licenses,["Apache-2.0","MIT"]},
+              {links,[{"Github",
+                       "https://github.com/rusterlium/erlang-cargo"}]}]}.
