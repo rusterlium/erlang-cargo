@@ -13,7 +13,6 @@
     executable/1
 ]).
 
-
 -record(artifact, {
     name :: binary(),
     % crate :: binary(), from package_id?
@@ -26,7 +25,9 @@
 }).
 
 -type kind() :: bin | cdylib | other.
+
 -opaque t() :: #artifact{}.
+
 -export_type([t/0]).
 
 -spec from_json(jsx:json_term()) -> {ok, t()} | error.
@@ -36,12 +37,13 @@ from_json(Entry) ->
             #{
                 <<"package_id">> := PackageId,
                 <<"target">> := Target
-             } = Entry,
+            } = Entry,
             Kind = kind_to_atom(maps:get(<<"kind">>, Target)),
-            Executable = case maps:get(<<"executable">>, Entry, undefined) of
-                null -> undefined;
-                V -> V
-            end,
+            Executable =
+                case maps:get(<<"executable">>, Entry, undefined) of
+                    null -> undefined;
+                    V -> V
+                end,
             {ok, #artifact{
                 name = maps:get(<<"name">>, Target),
                 filenames = maps:get(<<"filenames">>, Entry),
@@ -54,31 +56,29 @@ from_json(Entry) ->
             error
     end.
 
-
 -spec name(t()) -> binary().
-name(#artifact{name=C}) -> C.
+name(#artifact{name = C}) -> C.
 
 -spec version(t()) -> binary() | undefined.
-version(#artifact{version=V}) -> V.
+version(#artifact{version = V}) -> V.
 
 -spec version(t(), binary()) -> t().
-version(#artifact{} = A, V) -> A#artifact{version=V}.
+version(#artifact{} = A, V) -> A#artifact{version = V}.
 
 -spec package_id(t()) -> binary().
-package_id(#artifact{package_id=P}) -> P.
+package_id(#artifact{package_id = P}) -> P.
 
 -spec fresh(t()) -> boolean().
-fresh(#artifact{fresh=F}) -> F.
+fresh(#artifact{fresh = F}) -> F.
 
 -spec kind(t()) -> kind().
-kind(#artifact{kind=K}) -> K.
+kind(#artifact{kind = K}) -> K.
 
 -spec filenames(t()) -> [binary()].
-filenames(#artifact{filenames=F}) -> F.
+filenames(#artifact{filenames = F}) -> F.
 
 -spec executable(t()) -> binary() | undefined.
-executable(#artifact{executable=E}) -> E.
-
+executable(#artifact{executable = E}) -> E.
 
 kind_to_atom([<<"bin">>]) -> bin;
 kind_to_atom([<<"cdylib">>]) -> cdylib;

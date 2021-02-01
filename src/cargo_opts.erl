@@ -44,38 +44,37 @@ new(Opts) ->
     TargetDir = maps:get(target_dir, Opts, undefined),
 
     #opts{
-        path=Path,
-        release=Release,
-        toolchain=Toolchain,
-        target=Target,
-        target_dir=TargetDir
+        path = Path,
+        release = Release,
+        toolchain = Toolchain,
+        target = Target,
+        target_dir = TargetDir
     }.
 
 -spec toolchain(t()) -> binary() | undefined.
-toolchain(#opts{toolchain=Toolchain}) ->
+toolchain(#opts{toolchain = Toolchain}) ->
     Toolchain.
 
 -spec release(t()) -> boolean().
-release(#opts{release=Release}) ->
+release(#opts{release = Release}) ->
     Release.
 
 -spec release(t(), boolean()) -> t().
 release(O, Release) ->
-    O#opts{release=Release}.
+    O#opts{release = Release}.
 
 -spec path(t()) -> file:filename_all().
-path(#opts{path=Path}) ->
+path(#opts{path = Path}) ->
     Path.
 
 -spec target(t()) -> binary() | undefined.
-target(#opts{target=Target}) ->
+target(#opts{target = Target}) ->
     Target.
 
 -spec target_dir(t()) -> binary() | undefined.
-target_dir(#opts{target_dir=TargetDir}) ->
+target_dir(#opts{target_dir = TargetDir}) ->
     TargetDir.
 
 -spec target_dir(t(), binary()) -> t().
 target_dir(O, TargetDir) ->
-    O#opts{target_dir=TargetDir}.
-
+    O#opts{target_dir = TargetDir}.

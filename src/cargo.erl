@@ -22,17 +22,15 @@
 
 -type result() :: cargo_cmd:output().
 
-
 -spec init(file:name_all()) -> cargo_opts:t() | no_return().
 init(Path) ->
     init(Path, #{}).
 
-
--spec init(file:name_all(), #{ atom() => _ }) -> cargo_opts:t() | no_return().
+-spec init(file:name_all(), #{atom() => _}) -> cargo_opts:t() | no_return().
 init(Path, Opts) ->
-    cargo_opts:new(Opts#{ path => Path }).
+    cargo_opts:new(Opts#{path => Path}).
 
--spec metadata(cargo_opts:t()) -> #{ binary() => _ } | no_return().
+-spec metadata(cargo_opts:t()) -> #{binary() => _} | no_return().
 metadata(Opts0) ->
     % --release is invalid for metadata, skip
     Opts1 = cargo_opts:release(Opts0, false),
@@ -45,16 +43,14 @@ metadata(Opts0) ->
     ),
     Metadata.
 
-
 -spec build_raw(cargo_opts:t(), cargo_util:maybe_package()) -> result() | no_return().
 build_raw(Opts, MaybePackage) ->
     cargo_cmd:run_with_flags(
         Opts,
         "build",
         ["--message-format=json-diagnostic-short"] ++
-        cargo_util:package_flag(MaybePackage)
+            cargo_util:package_flag(MaybePackage)
     ).
-
 
 -spec test_all(cargo_opts:t()) -> result() | no_return().
 test_all(Opts) ->
@@ -69,10 +65,9 @@ do_test(Opts, MaybePackage) ->
         Opts,
         "test",
         ["--message-format=json-diagnostic-short"] ++
-        cargo_util:package_flag(MaybePackage) ++
-        ["--", "-Z", "unstable-options", "--format=json"]
+            cargo_util:package_flag(MaybePackage) ++
+            ["--", "-Z", "unstable-options", "--format=json"]
     ).
-
 
 -spec clean(cargo_opts:t()) -> ok | no_return().
 clean(Opts) ->
@@ -83,8 +78,7 @@ clean(Opts) ->
     ),
     ok.
 
-
--spec get_package_versions(cargo_opts:t()) -> #{ atom() => _ }.
+-spec get_package_versions(cargo_opts:t()) -> #{atom() => _}.
 get_package_versions(Opts) ->
     #{<<"packages">> := Packages} = metadata(Opts),
     maps:from_list([
@@ -98,23 +92,20 @@ get_package_versions(Opts) ->
         || M <- Packages
     ]).
 
-
 -spec build_all(cargo_opts:t()) -> [cargo_artifact:t()].
 build_all(Opts) ->
     do_build(Opts, false).
 
-
 -spec build(cargo_opts:t(), cargo_util:to_binary()) -> [cargo_artifact:t()].
 build(Opts, Package) ->
     do_build(Opts, {true, Package}).
-
 
 do_build(Opts, MaybePackage) ->
     Packages = get_package_versions(Opts),
     Outputs = build_raw(Opts, MaybePackage),
 
     lists:filtermap(
-        fun (Entry) ->
+        fun(Entry) ->
             case cargo_artifact:from_json(Entry) of
                 {ok, Artifact} ->
                     PackageId = cargo_artifact:package_id(Artifact),
