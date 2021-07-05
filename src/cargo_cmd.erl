@@ -76,8 +76,7 @@ exec(Command, Path) ->
         {line, ?MAX_LINE_LENGTH},
         use_stdio,
         hide,
-        eof,
-        {env, env()}
+        eof
     ],
 
     Command1 = lists:flatten(patch_on_windows(Command)),
@@ -116,20 +115,6 @@ patch_on_windows(Cmd) ->
             "cmd /q /c " ++ Cmd;
         _ ->
             Cmd
-    end.
-
--spec env() -> [{string(), string()}].
-env() ->
-    case os:type() of
-        {unix, darwin} ->
-            % https://github.com/rust-lang/cargo/issues/3287
-            % https://github.com/rust-lang/rust/pull/36574
-            [
-                {"RUSTFLAGS",
-                    "--codegen link-arg=-flat_namespace --codegen link-arg=-undefined --codegen link-arg=suppress"}
-            ];
-        _ ->
-            []
     end.
 
 % Ignore dialyzer warnings for finalize and handle_output as the spec
